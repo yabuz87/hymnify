@@ -2,6 +2,7 @@ import cookieParser from 'cookie-parser';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import connect from './libs/mongodb.js'
 dotenv.config();
 const port=process.env.PORT || 5000;
 const app=express();
@@ -21,5 +22,6 @@ app.get('/', (req,res)=>{
     res.send('API is running....');
 });
 app.listen(port, ()=>{
+    connect()
     console.log(`Server is running on port ${port}`);
 })
