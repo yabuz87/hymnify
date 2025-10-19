@@ -156,4 +156,30 @@ export const loginClient = async (req, res) => {
   }
 };
 
+// OwnerController.js
+export const logoutAdmin = async (req, res) => {
+  try {
+    // Clear the JWT cookie
+    res.clearCookie("jwt", {
+      httpOnly: true, // must match your cookie options in generateToken
+      secure: process.env.NODE_ENV === "production", // same as your login cookie
+      sameSite: "strict",
+    });
 
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ message: "Server error: " + error.message });
+  }
+};
+
+// OwnerController.js
+export const logoutClient = async (req, res) => {
+  try {
+    // Optional: you could just return success
+    res.status(200).json({ message: "Client logged out successfully" });
+  } catch (error) {
+    console.error("Client logout error:", error);
+    res.status(500).json({ message: "Server error: " + error.message });
+  }
+};
