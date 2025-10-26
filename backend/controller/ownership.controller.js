@@ -8,8 +8,7 @@ import Owner from '../model/owner.model.js';
 import Song from '../model/songs.model.js';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
-import express from 'express';
-import { generateToken } from "../utils/generateToken.js"; // your JWT function
+import { generateToken } from "../libs/utils.js"; // your JWT function
 dotenv.config();
 
 
@@ -18,11 +17,18 @@ dotenv.config();
 
 export const signUp= async (req,res)=>{
     try {
-        const {requestBody} = req.body;
-        const existingOwner = await Owner.findOne({email: requestBody.email});
-        const existingChurch = await Owner.findOne({churchName: requestBody.churchName});
-        const existingChoir = await Owner.findOne({choirName: requestBody.choirName});
-        const existinglocation=await Owner.findOne({'location.region': requestBody.location.region, 'location.city': requestBody.location.city, 'location.kebele': requestBody.location.kebele});
+                const {
+        churchName,
+        choirName,
+        location,
+        email,
+        password,
+        accessingPassword,
+          } = req.body;
+        const existingOwner = await Owner.findOne({email});
+        const existingChurch = await Owner.findOne({churchName});
+        const existingChoir = await Owner.findOne({choirName});
+        const existinglocation=await Owner.findOne({location});
 
         if(existingChurch && existingChoir && existinglocation){
             return res
@@ -34,14 +40,14 @@ export const signUp= async (req,res)=>{
             .status(400)
             .json({message: 'Owner with this email already exists'});
         }
-        const hashedPassword = await bcrypt.hash(requestBody.password, 10);
-        const hashedAccessingPassword = await bcrypt.hash(requestBody.accessingPassword, 10);
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedAccessingPassword = await bcrypt.hash(accessingPassword, 10);
 
         const newOwner = new Owner({
-            churchName: requestBody.churchName,
-            choirName: requestBody.choirName,
-            location: requestBody.location,
-            email: requestBody.email,
+                churchName,
+                choirName,
+                location,
+                email,
             password: hashedPassword,
             accessingPassword: hashedAccessingPassword,
         });

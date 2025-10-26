@@ -5,7 +5,7 @@
 // and getting songs by owner id to manage the songs owned by a particular owner
 // functions logics are these but not only uploadsong,getallpublic,deletesong,editsong
 import Song  from "../model/songs.model.js"
-import Owner from "../model/owner.model"
+import Owner from "../model/owner.model.js"
 
 export const uploadSong = async (req, res) => {
   try {
@@ -43,6 +43,7 @@ export const uploadSong = async (req, res) => {
 };
 
 export const getallpublic=(req,res)=>{
+  
 
 }
 export const deletesong=(req,res)=>{
