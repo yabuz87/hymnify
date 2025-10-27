@@ -11,9 +11,22 @@ const songSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  album: {
-    type: String, // changed from Number → album names are often text
-    trim: true
+  scope:{
+    enum:['public','private'],
+    type:String,
+    required:true   
+  },
+  song: {
+    numbers:{
+      type: Object,
+      required: true,
+      trim: true
+    },
+    chorus:{
+      type: String,
+      required: true,
+      trim: true
+    }
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
