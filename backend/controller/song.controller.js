@@ -6,11 +6,12 @@
 // functions logics are these but not only uploadsong,getallpublic,deletesong,editsong
 import Song  from "../model/songs.model.js"
 import Owner from "../model/owner.model.js"
-
+const song=Song;
 export const uploadSong = async (req, res) => {
   try {
-    const { title, artist, album, lyrics, genre, category, description } = req.body;
+    const { title, artist, song, lyrics, genre, category,scope, description} = req.body;
     const { ownerId } = req.params;
+    console.log("Owner ID:", ownerId);
 
     // Validate required fields
     if (!title || !artist || !ownerId) {
@@ -23,14 +24,15 @@ export const uploadSong = async (req, res) => {
     //   return res.status(409).json({ message: "Song already exists." });
     // }
 
-    const newSong = new Song({
+    const newSong = new song({
       title,
       artist,
-      album,
+      song,
       owner: ownerId,
       lyrics,
       genre,
       category,
+      scope,
       description,
     });
 
@@ -42,7 +44,9 @@ export const uploadSong = async (req, res) => {
   }
 };
 
-export const getallpublic=(req,res)=>{
+export const getallpublic=async (req,res)=>{
+  const publicSongs= await song.find({scope:'public'})
+  res.status(200).json({publicSongs})
   
 
 }

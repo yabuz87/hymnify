@@ -5,12 +5,14 @@
 // the use cases includes signing up as an owner, logging in as an owner, upating owner details, deleting owner account
 
 import Owner from '../model/owner.model.js';
-import Song from '../model/songs.model.js';
+import Song  from '../model/songs.model.js';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import { generateToken } from "../libs/utils.js"; // your JWT function
 dotenv.config();
 
+const owner=Owner;
+const song=Song;
 
 
 // Function to sign up a new owner
@@ -25,10 +27,10 @@ export const signUp= async (req,res)=>{
         password,
         accessingPassword,
           } = req.body;
-        const existingOwner = await Owner.findOne({email});
-        const existingChurch = await Owner.findOne({churchName});
-        const existingChoir = await Owner.findOne({choirName});
-        const existinglocation=await Owner.findOne({location});
+        const existingOwner = await owner.findOne({email});
+        const existingChurch = await owner.findOne({churchName});
+        const existingChoir = await owner.findOne({choirName});
+        const existinglocation=await owner.findOne({location});
 
         if(existingChurch && existingChoir && existinglocation){
             return res
@@ -79,7 +81,7 @@ export const loginAdmin = async (req, res) => {
     const { email, password } = req.body;
 
     // 1 Check if email exists
-    const owner = await Owner.findOne({ email });
+    const owner = await owner.findOne({ email });
     if (!owner) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
@@ -118,12 +120,10 @@ export const loginClient = async (req, res) => {
     const { churchName, choirName, accessingPassword, location } = req.body;
 
     // 1️ Find the owner by choir, church, and location
-    const owner = await Owner.findOne({
+    const owner = await owner.findOne({
       churchName,
       choirName,
-      "location.region": location.region,
-      "location.city": location.city,
-      "location.kebele": location.kebele,
+      location
     });
 
     // 2️ If no owner found
@@ -140,7 +140,7 @@ export const loginClient = async (req, res) => {
 
 
    // 4️ Fetch all songs that belong to this owner
-    const songs = await Song.find({ owner: owner._id }).sort({ uploadedAt: -1 }); // latest first
+    const songs = await song.find({ owner: owner._id }).sort({ uploadedAt: -1 }); // latest first
 
   //  5️ Return owner info + songs
     res.status(200).json({
