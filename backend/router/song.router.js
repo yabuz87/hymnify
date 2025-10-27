@@ -5,7 +5,7 @@ export const songRouter=express.Router()
 
 
 
-songRouter.get('/all',getallpublic)
-songRouter.post('/uploadsong',uploadSong)
-songRouter.post('/delete',protectRoute,deletesong)
-songRouter.post('/edit',protectRoute,editsong)
+songRouter.get('/song/all',getallpublic)
+songRouter.post('/song/upload/:ownerId', uploadSong)
+songRouter.post('/song/delete',protectRoute,deletesong)
+songRouter.post('/song/edit',protectRoute,editsong)
