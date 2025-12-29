@@ -99,7 +99,7 @@ This project is licensed under the **MIT License** — feel free to use and impr
 
 ## 👥 Maintainers
 
- [@yabuz87](github.com/yabuz87)
+[@yabuz87](https://www.github.com/yabuz87)
 
 ---
 
