@@ -50,6 +50,9 @@ const songSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  album:{
+    type:String,
+  },
   description: { // corrected spelling
     type: String,
     trim: true
