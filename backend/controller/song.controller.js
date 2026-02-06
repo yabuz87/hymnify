@@ -9,7 +9,7 @@ import Owner from "../model/owner.model.js"
 const song=Song;
 export const uploadSong = async (req, res) => {
   try {
-    const { title, artist, song, lyrics, genre, category,scope, description} = req.body;
+    const { title, artist,album, song, lyrics, genre, category,scope, description} = req.body;
     const { ownerId } = req.params;
     console.log("Owner ID:", ownerId);
 
@@ -19,12 +19,12 @@ export const uploadSong = async (req, res) => {
     }
 
     // Optional: check for duplicates
-    // const existingSong = await Song.findOne({ title, artist, album, owner: ownerId });
-    // if (existingSong) {
-    //   return res.status(409).json({ message: "Song already exists." });
-    // }
+    const existingSong = await Song.findOne({ title, artist,album,owner: ownerId });
+    if (existingSong) {
+      return res.status(409).json({ message: "Song already exists." });
+    }
 
-    const newSong = new song({
+    const newSong = new Song({
       title,
       artist,
       song,
@@ -32,6 +32,7 @@ export const uploadSong = async (req, res) => {
       lyrics,
       genre,
       category,
+      album,
       scope,
       description,
     });
@@ -40,7 +41,7 @@ export const uploadSong = async (req, res) => {
     res.status(201).json({ newSong });
   } catch (error) {
     console.error("Error uploading song:", error);
-    res.status(500).json({ message: "Server issue while uploading song." });
+    res.status(500).json({ message: "Server issue while uploading song.",error});
   }
 };
 
@@ -50,10 +51,32 @@ export const getallpublic=async (req,res)=>{
   
 
 }
-export const deletesong=(req,res)=>{
+export const deleteSong = async (req, res) => {
+  try {
+    const { title, artist, album, category, scope } = req.body;
+    const { ownerId } = req.params;
 
+    const song = await Song.findOne({ title, artist, album, category, scope });
 
-}
+    if (!song) {
+      return res.status(404).json({ message: "Song not found" });
+    }
+
+    if (song.owner.toString() !== ownerId) {
+      return res.status(403).json({ message: "Not authorized to delete this song" });
+    }
+
+    await Song.deleteOne({ _id: song._id });
+
+    return res.status(200).json({ message: "Song deleted successfully" });
+
+  } catch (error) {
+    return res.status(500).json({
+      message: "Server error while deleting song",
+      error
+    });
+  }
+};
 export const editsong=(req,res)=>{
 
 }
