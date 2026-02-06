@@ -7,7 +7,9 @@
 import Owner from '../model/owner.model.js';
 import Song  from '../model/songs.model.js';
 import dotenv from 'dotenv';
+import Unverified from '../model/Unverified.js';
 import bcrypt from 'bcrypt';
+import nodemailer from 'nodemailer';
 import { generateToken } from "../libs/utils.js"; // your JWT function
 dotenv.config();
 
@@ -16,63 +18,131 @@ const song=Song;
 
 
 // Function to sign up a new owner
-
-export const signUp= async (req,res)=>{
-    try {
-                const {
-        churchName,
-        choirName,
-        location,
-        email,
-        password,
-        accessingPassword,
-          } = req.body;
-        const existingOwner = await owner.findOne({email});
-        const existingChurch = await owner.findOne({churchName});
-        const existingChoir = await owner.findOne({choirName});
-        const existinglocation=await owner.findOne({location});
-
-        if(existingChurch && existingChoir && existinglocation){
-            return res
-            .status(400)
-            .json({message:" Owner with this church, choir, and location already exists"});
-        }
-        if(existingOwner){
-            return res
-            .status(400)
-            .json({message: 'Owner with this email already exists'});
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const hashedAccessingPassword = await bcrypt.hash(accessingPassword, 10);
-
-        const newOwner = new Owner({
-                churchName,
-                choirName,
-                location,
-                email,
-            password: hashedPassword,
-            accessingPassword: hashedAccessingPassword,
-        });
-        await newOwner.save();
-        const token = generateToken(newOwner._id, res);
-        res.status(201).json({
-            message: 'Owner registered successfully',
-            owner: {
-                id: newOwner._id,
-                churchName: newOwner.churchName,
-                choirName: newOwner.choirName,
-                location: newOwner.location,
-                email: newOwner.email,
-            },
-            token
-        });
-
-
-
-    } catch (error) {
-        res.status(500).json({message: 'Server error', error: error.message}); 
-    }
+const generateOTP=()=>{
+   return Math.floor(100000+Math.random()*900000).toString();
 }
+export const signUp = async (req, res) => {
+  try {
+    const {
+      churchName,
+      choirName,
+      location,
+      email,
+      password,
+      accessingPassword,
+    } = req.body;
+
+    const existingOwner = await owner.findOne({ email });
+    if (existingOwner) {
+      return res.status(400).json({
+        message: "Owner with this email already exists",
+      });
+    }
+
+    const existingUnverified = await Unverified.findOne({ email });
+      if (existingUnverified && existingUnverified.otpExpires > Date.now()) {
+      return res.status(400).json({
+        message: "OTP already sent. Please verify your email.",
+      });
+    }
+    
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedAccessingPassword = await bcrypt.hash(accessingPassword, 10);
+
+    const otpCode = generateOTP();
+    const hashedOtp = await bcrypt.hash(otpCode, 10);
+
+    const newOwner = new Unverified({
+      churchName,
+      choirName,
+      location,
+      email,
+      password: hashedPassword,
+      accessingPassword: hashedAccessingPassword,
+      otpCode: hashedOtp,
+      otpExpires: Date.now() + 10 * 60 * 1000, // 10 minutes
+    });
+
+    await newOwner.save();
+    await sendOtpEmail(email, otpCode);
+
+    return res.status(201).json({
+      message: "We've sent you an OTP to your email. Check inbox or spam.",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+export const sendOtpEmail = async (email, otpCode) => {
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587, // Use 587 for STARTTLS
+    secure: false, // false for 587
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+      ciphers: 'SSLv3', // Sometimes needed for older servers
+      rejectUnauthorized: false // Use with caution, only in dev
+    }
+  });
+
+  await transporter.sendMail({
+    from: `hymnify app <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Verify Your Email",
+    html: `<h3>Your verification code</h3>
+           <h4>${otpCode}</h4>
+           <p>This code will expire in 10 minutes.</p>`
+  });
+};
+
+export const verifyEmail = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const unverifiedUser = await Unverified.findOne({ email });
+    if (!unverifiedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check expiration first
+    if (unverifiedUser.otpExpires < Date.now()) {
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    // Compare entered OTP with hashed OTP
+    const isValid = await bcrypt.compare(otp, unverifiedUser.otpCode);
+    if (!isValid) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // Move user to Owner collection, excluding OTP fields
+    const finalData = await Unverified
+      .findOne({ email })
+      .select("-otpCode -otpExpires");
+
+    const verifiedOwner = new owner(finalData.toObject());
+    await verifiedOwner.save();
+
+    // Delete unverified record
+    await Unverified.deleteOne({ _id: unverifiedUser._id });
+
+    res.status(200).json({ message: "Email verified successfully" });
+
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
 
 // function to log in as existing owner
 
@@ -81,7 +151,7 @@ export const loginAdmin = async (req, res) => {
     const { email, password } = req.body;
 
     // 1 Check if email exists
-    const owner = await owner.findOne({ email });
+    const owner = await Owner.findOne({ email });
     if (!owner) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
@@ -120,7 +190,7 @@ export const loginClient = async (req, res) => {
     const { churchName, choirName, accessingPassword, location } = req.body;
 
     // 1️ Find the owner by choir, church, and location
-    const owner = await owner.findOne({
+    const owner = await Owner.findOne({
       churchName,
       choirName,
       location
