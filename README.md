@@ -99,9 +99,7 @@ This project is licensed under the **MIT License** — feel free to use and impr
 
 ## 👥 Maintainers
 
-**Developer:** Yabets Solomon
-**Email:** [jabezsolomonz@gmail.com](mailto:jabezsolomonz@gmail.com)
-**GitHub:** [github.com/yabuz87](https://github.com/yabuz87)
+[@yabuz87](https://www.github.com/yabuz87)
 
 ---
 
