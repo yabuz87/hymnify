@@ -1,0 +1,44 @@
+{
+  "signupTestData":{
+  "route":"http://localhost:3000/signup",
+  "data":{"churchName": "Emanuel Church",
+  "choirName": "Heavenly Voices",
+  "location": {
+    "region": "Addis Ababa",
+    "city": "Addis Ketema",
+    "kebele": "12"
+  },
+  "email": "realtime email address here",
+  "password": "strongPass123",
+  "accessingPassword": "access123",
+  "profileImage": "https://res.cloudinary.com/example/image/upload/v1234/profile.jpg"}
+},
+"signup verification":{
+"route":"http://localhost:3000/verify",
+"data":{"email":"signed up email address",
+"otpCode":"enter the otp code here"}
+},
+
+"adminlogin":{
+"route":"http://localhost:3000/login",
+"data":{"email":"heavenlyvoices@gmail.com",
+"password":"strongPass123"}},
+
+"clientLogin":{
+  "route":"http://localhost:3000/client/login",
+  "data":{"churchName": "Emanuel Church",
+  "choirName": "Heavenly Voices",
+  "location": {
+    "region": "Addis Ababa",
+    "city": "Addis Ketema",
+    "kebele": "12"
+  },
+  "accessingPassword": "access123"}
+},
+
+"logout":{
+  "route_to_client_logout":"http://localhost:3000/client/logout",
+  "route_to_admin_logout":"http://localhost:3000/logout"
+}
+
+}
