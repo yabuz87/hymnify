@@ -1,35 +1,32 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Signup from './components/home/Signup';
+import OtpVerification from './components/home/Otp';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import Navbar from './components/home/navbar/Navbar';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <Router>
+      <div className="App">
+       <Navbar/>
+        <Routes>
+          {/* Default route redirects to signup */}
+          <Route path="/" element={<Navigate to="/signup" replace />} />
+          
+          {/* Signup Page */}
+          <Route path="/signup" element={<Signup />} />
+          
+          {/* OTP Verification Page */}
+          <Route path="/verify-otp" element={<OtpVerification />} />
+          
+          {/* Optional: Add a route with email parameter */}
+          <Route path="/verify-otp/:email" element={<OtpVerification />} />
+        </Routes>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </Router>
+  );
 }
 
-export default App
+export default App;
