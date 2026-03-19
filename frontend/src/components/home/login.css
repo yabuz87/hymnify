@@ -1,10 +1,10 @@
-/* signup.css — Using theme variables */
+/* login.css — Using theme variables */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
 /* ── Page ── */
 
-.signup-page {
+.login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -17,9 +17,9 @@
 
 /* ── Card ── */
 
-.signup-card {
+.login-card {
   width: 100%;
-  max-width: 680px;
+  max-width: 400px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -29,19 +29,19 @@
 
 /* ── Header ── */
 
-.signup-header {
+.login-header {
   text-align: center;
   margin-bottom: 2rem;
 }
 
-.signup-title {
+.login-title {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 0.35rem;
 }
 
-.signup-subtitle {
+.login-subtitle {
   font-size: 0.875rem;
   color: var(--text-muted);
   margin: 0;
@@ -49,37 +49,29 @@
 
 /* ── Form ── */
 
-.signup-form {
+.login-form {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
-}
-
-/* ── Fields Grid — 2 columns on desktop ── */
-
-.fields-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 1.1rem;
 }
 
 /* ── Field Group ── */
 
-.field-group {
+.login-form .field-group {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
 }
 
-.field-group label {
+.login-form .field-group label {
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
 
-.field-group input[type="text"],
-.field-group input[type="email"],
-.field-group input[type="password"] {
+.login-form .field-group input[type="text"],
+.login-form .field-group input[type="email"],
+.login-form .field-group input[type="password"] {
   width: 100%;
   padding: 0.6rem 0.75rem;
   font-size: 0.875rem;
@@ -92,32 +84,32 @@
   transition: border-color 0.15s, background 0.2s ease;
 }
 
-.field-group input::placeholder {
+.login-form .field-group input::placeholder {
   color: var(--text-placeholder);
 }
 
-.field-group input:focus {
+.login-form .field-group input:focus {
   border-color: var(--border-input-focus);
 }
 
-.field-group input.input-error {
+.login-form .field-group input.input-error {
   border-color: var(--text-error);
 }
 
 /* ── Password Field ── */
 
-.password-wrapper {
+.login-form .password-wrapper {
   position: relative;
   display: flex;
 }
 
-.password-wrapper input {
+.login-form .password-wrapper input {
   flex: 1;
   border-radius: 6px 0 0 6px;
   border-right: none;
 }
 
-.toggle-btn {
+.login-form .toggle-btn {
   padding: 0.6rem 0.85rem;
   font-size: 0.75rem;
   font-weight: 500;
@@ -132,54 +124,20 @@
   white-space: nowrap;
 }
 
-.toggle-btn:hover {
+.login-form .toggle-btn:hover {
   background: var(--bg-hover);
 }
 
-/* ── Hints & Errors ── */
+/* ── Errors ── */
 
-.field-hint {
-  font-size: 0.72rem;
-  color: var(--text-hint);
-}
-
-.error-msg {
+.login-form .error-msg {
   font-size: 0.75rem;
   color: var(--text-error);
 }
 
-/* ── Terms Checkbox ── */
-
-.terms-group {
-  margin-top: 0.25rem;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.checkbox-label input[type="checkbox"] {
-  margin-top: 0.15rem;
-  accent-color: var(--text-secondary);
-}
-
-.checkbox-label a {
-  color: var(--text-link);
-  text-decoration: underline;
-}
-
-.checkbox-label a:hover {
-  color: var(--text-link-hover);
-}
-
 /* ── Submit Button ── */
 
-.submit-btn {
+.login-form .submit-btn {
   width: 100%;
   padding: 0.7rem;
   font-size: 0.875rem;
@@ -198,94 +156,59 @@
   transition: background 0.15s;
 }
 
-.submit-btn:hover:not(:disabled) {
+.login-form .submit-btn:hover:not(:disabled) {
   background: var(--bg-btn-hover);
 }
 
-.submit-btn:disabled {
+.login-form .submit-btn:disabled {
   background: var(--bg-btn-disabled);
   cursor: not-allowed;
 }
 
 /* ── Spinner ── */
 
-.spinner {
+.login-form .spinner {
   display: inline-block;
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: spin 0.6s linear infinite;
+  animation: login-spin 0.6s linear infinite;
 }
 
-@keyframes spin {
+@keyframes login-spin {
   to { transform: rotate(360deg); }
 }
 
-/* ── Login Link ── */
+/* ── Signup Link ── */
 
-.login-link {
+.signup-link {
   text-align: center;
   font-size: 0.8rem;
   color: var(--text-muted);
   margin: 0.5rem 0 0;
 }
 
-.login-link a {
+.signup-link a {
   color: var(--text-link);
   font-weight: 500;
   text-decoration: none;
 }
 
-.login-link a:hover {
+.signup-link a:hover {
   text-decoration: underline;
-}
-
-/* ── Scrollbar ── */
-
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
-}
-
-/* ── Animation ── */
-
-.signup-card {
-  animation: fadeIn 0.4s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Responsive ── */
 
-@media (max-width: 768px) {
-  .signup-card {
-    max-width: 440px;
+@media (max-width: 480px) {
+  .login-card {
     padding: 2rem 1.25rem;
     border-radius: 8px;
   }
 
-  .fields-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .signup-title {
+  .login-title {
     font-size: 1.35rem;
   }
 }

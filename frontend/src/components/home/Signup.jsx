@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-// In your Signup component, import useNavigate
+import { useAuthStore } from '../state-managment/auth.js';
 import { useNavigate } from 'react-router-dom';
-import './Signup.css'; // We'll create this custom CSS file
+import './signup.css';
 
 function Signup() {
+  const { signup } = useAuthStore();
   const [formData, setFormData] = useState({
     churchName: '',
     choirName: '',
@@ -26,7 +26,6 @@ function Signup() {
       ...prev,
       [name]: value
     }));
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -80,24 +79,20 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
-      // API call would go here
-      console.log('Form submitted:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Handle successful signup
-      alert('Signup successful! Please check your email for OTP.');
-      navigate(`/verify-otp/${encodeURIComponent(formData.email)}`);
-      
+      console.log(formData);
+      const res = await signup(formData);
+      console.log(res);
+      if (res) {
+        navigate(`/verify-otp/${encodeURIComponent(formData.email)}`);
+      }
     } catch (error) {
       console.error('Signup error:', error);
       alert('Signup failed. Please try again.');
@@ -115,237 +110,168 @@ function Signup() {
   };
 
   return (
-    <div className="signup-container">
-      <div className="container-fluid px-0">
-        <div className="row g-0 min-vh-100">
-          {/* Left side - Image/Ambient section */}
-          <div className="col-lg-6 d-none d-lg-block">
-            <div className="ambient-section">
-              <div className="ambient-content">
-                <div className="floating-shapes">
-                  <div className="shape shape-1"></div>
-                  <div className="shape shape-2"></div>
-                  <div className="shape shape-3"></div>
-                </div>
-                <div className="ambient-text">
-                  <h1 className="display-4 fw-bold mb-4">Hymnify</h1>
-                  <p className="lead mb-4">Bringing harmony to your choir management</p>
-                  <div className="features-list">
-                    <div className="feature-item">
-                      <i className="bi bi-music-note-beamed"></i>
-                      <span>Easy choir management</span>
-                    </div>
-                    <div className="feature-item">
-                      <i className="bi bi-envelope-paper"></i>
-                      <span>Secure OTP verification</span>
-                    </div>
-                    <div className="feature-item">
-                      <i className="bi bi-shield-check"></i>
-                      <span>Protected access passwords</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right side - Signup form */}
-          <div className="col-lg-6">
-            <div className="form-section">
-              <div className="form-wrapper">
-                <div className="text-center mb-4">
-                  <h2 className="fw-bold">Create Account</h2>
-                  <p className="text-muted">Join Hymnify and start managing your choir</p>
-                </div>
-
-                <form onSubmit={handleSubmit}>
-                  {/* Church Name */}
-                  <div className="mb-3">
-                    <label htmlFor="churchName" className="form-label fw-medium">
-                      Church Name
-                    </label>
-                    <input
-                      type="text"
-                      className={`form-control ${errors.churchName ? 'is-invalid' : ''}`}
-                      id="churchName"
-                      name="churchName"
-                      value={formData.churchName}
-                      onChange={handleChange}
-                      placeholder="Enter your church name"
-                    />
-                    {errors.churchName && (
-                      <div className="invalid-feedback">{errors.churchName}</div>
-                    )}
-                  </div>
-
-                  {/* Choir Name */}
-                  <div className="mb-3">
-                    <label htmlFor="choirName" className="form-label fw-medium">
-                      Choir Name
-                    </label>
-                    <input
-                      type="text"
-                      className={`form-control ${errors.choirName ? 'is-invalid' : ''}`}
-                      id="choirName"
-                      name="choirName"
-                      value={formData.choirName}
-                      onChange={handleChange}
-                      placeholder="Enter your choir name"
-                    />
-                    {errors.choirName && (
-                      <div className="invalid-feedback">{errors.choirName}</div>
-                    )}
-                  </div>
-
-                  {/* Location */}
-                  <div className="mb-3">
-                    <label htmlFor="location" className="form-label fw-medium">
-                      Location
-                    </label>
-                    <input
-                      type="text"
-                      className={`form-control ${errors.location ? 'is-invalid' : ''}`}
-                      id="location"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleChange}
-                      placeholder="City, State"
-                    />
-                    {errors.location && (
-                      <div className="invalid-feedback">{errors.location}</div>
-                    )}
-                  </div>
-
-                  {/* Email */}
-                  <div className="mb-3">
-                    <label htmlFor="email" className="form-label fw-medium">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="you@example.com"
-                    />
-                    {errors.email && (
-                      <div className="invalid-feedback">{errors.email}</div>
-                    )}
-                  </div>
-
-                  {/* Password */}
-                  <div className="mb-3">
-                    <label htmlFor="password" className="form-label fw-medium">
-                      Password
-                    </label>
-                    <div className="input-group">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                        id="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        placeholder="Create a strong password"
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        onClick={() => togglePasswordVisibility('password')}
-                      >
-                        {showPassword ? 'Hide' : 'Show'}
-                      </button>
-                      {errors.password && (
-                        <div className="invalid-feedback">{errors.password}</div>
-                      )}
-                    </div>
-                    <small className="text-muted">
-                      Password must be at least 8 characters with uppercase, lowercase, and number
-                    </small>
-                  </div>
-
-                  {/* Access Password */}
-                  <div className="mb-4">
-                    <label htmlFor="accessingPassword" className="form-label fw-medium">
-                      Access Password
-                    </label>
-                    <div className="input-group">
-                      <input
-                        type={showAccessPassword ? 'text' : 'password'}
-                        className={`form-control ${errors.accessingPassword ? 'is-invalid' : ''}`}
-                        id="accessingPassword"
-                        name="accessingPassword"
-                        value={formData.accessingPassword}
-                        onChange={handleChange}
-                        placeholder="Set access password for members"
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        onClick={() => togglePasswordVisibility('access')}
-                      >
-                        {showAccessPassword ? 'Hide' : 'Show'}
-                      </button>
-                      {errors.accessingPassword && (
-                        <div className="invalid-feedback">{errors.accessingPassword}</div>
-                      )}
-                    </div>
-                    <small className="text-muted">
-                      This password will be used by choir members to access songs
-                    </small>
-                  </div>
-
-                  {/* Terms and Conditions */}
-                  <div className="mb-4">
-                    <div className="form-check">
-                      <input
-                        type="checkbox"
-                        className={`form-check-input ${errors.agreeTerms ? 'is-invalid' : ''}`}
-                        id="agreeTerms"
-                        checked={agreeTerms}
-                        onChange={(e) => setAgreeTerms(e.target.checked)}
-                      />
-                      <label className="form-check-label" htmlFor="agreeTerms">
-                        I agree to the <a href="#" className="text-decoration-none">Terms of Service</a> and <a href="#" className="text-decoration-none">Privacy Policy</a>
-                      </label>
-                      {errors.agreeTerms && (
-                        <div className="invalid-feedback d-block">{errors.agreeTerms}</div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    className="btn btn-primary w-100 py-2 mb-3"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        Creating Account...
-                      </>
-                    ) : (
-                      'Create Account'
-                    )}
-                  </button>
-
-                  {/* Login Link */}
-                  <div className="text-center">
-                    <p className="mb-0">
-                      Already have an account?{' '}
-                      <a href="#" className="text-decoration-none fw-medium">
-                        Sign In
-                      </a>
-                    </p>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
+    <div className="signup-page">
+      <div className="signup-card">
+        {/* Header */}
+        <div className="signup-header">
+          <h1 className="signup-title">Hymnify</h1>
+          <p className="signup-subtitle">Create your choir account</p>
         </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="signup-form">
+          <div className="fields-grid">
+            {/* Church Name */}
+            <div className="field-group">
+              <label htmlFor="churchName">Church Name</label>
+              <input
+                type="text"
+                id="churchName"
+                name="churchName"
+                value={formData.churchName}
+                onChange={handleChange}
+                placeholder="Enter your church name"
+                className={errors.churchName ? 'input-error' : ''}
+              />
+              {errors.churchName && <span className="error-msg">{errors.churchName}</span>}
+            </div>
+
+            {/* Choir Name */}
+            <div className="field-group">
+              <label htmlFor="choirName">Choir Name</label>
+              <input
+                type="text"
+                id="choirName"
+                name="choirName"
+                value={formData.choirName}
+                onChange={handleChange}
+                placeholder="Enter your choir name"
+                className={errors.choirName ? 'input-error' : ''}
+              />
+              {errors.choirName && <span className="error-msg">{errors.choirName}</span>}
+            </div>
+
+            {/* Location */}
+            <div className="field-group">
+              <label htmlFor="location">Location</label>
+              <input
+                type="text"
+                id="location"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="City, State"
+                className={errors.location ? 'input-error' : ''}
+              />
+              {errors.location && <span className="error-msg">{errors.location}</span>}
+            </div>
+
+            {/* Email */}
+            <div className="field-group">
+              <label htmlFor="email">Email Address</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                className={errors.email ? 'input-error' : ''}
+              />
+              {errors.email && <span className="error-msg">{errors.email}</span>}
+            </div>
+
+            {/* Password */}
+            <div className="field-group">
+              <label htmlFor="password">Password</label>
+              <div className="password-wrapper">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Create a strong password"
+                  className={errors.password ? 'input-error' : ''}
+                />
+                <button
+                  type="button"
+                  className="toggle-btn"
+                  onClick={() => togglePasswordVisibility('password')}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              <span className="field-hint">
+                Min 8 characters with uppercase, lowercase, and number
+              </span>
+              {errors.password && <span className="error-msg">{errors.password}</span>}
+            </div>
+
+            {/* Access Password */}
+            <div className="field-group">
+              <label htmlFor="accessingPassword">Access Password</label>
+              <div className="password-wrapper">
+                <input
+                  type={showAccessPassword ? 'text' : 'password'}
+                  id="accessingPassword"
+                  name="accessingPassword"
+                  value={formData.accessingPassword}
+                  onChange={handleChange}
+                  placeholder="Set access password for members"
+                  className={errors.accessingPassword ? 'input-error' : ''}
+                />
+                <button
+                  type="button"
+                  className="toggle-btn"
+                  onClick={() => togglePasswordVisibility('access')}
+                >
+                  {showAccessPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              <span className="field-hint">
+                Members will use this to access songs
+              </span>
+              {errors.accessingPassword && <span className="error-msg">{errors.accessingPassword}</span>}
+            </div>
+          </div>
+
+          {/* Terms */}
+          <div className="terms-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={agreeTerms}
+                onChange={(e) => setAgreeTerms(e.target.checked)}
+              />
+              <span>
+                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+              </span>
+            </label>
+            {errors.agreeTerms && <span className="error-msg">{errors.agreeTerms}</span>}
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            className="submit-btn"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <span className="spinner"></span>
+                Creating Account...
+              </>
+            ) : (
+              'Create Account'
+            )}
+          </button>
+
+          {/* Login link */}
+          <p className="login-link">
+            Already have an account? <a href="/login">Sign In</a>
+          </p>
+        </form>
       </div>
     </div>
   );

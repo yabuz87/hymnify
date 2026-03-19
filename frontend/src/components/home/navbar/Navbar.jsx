@@ -6,8 +6,17 @@ function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState('English');
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'light';
+  });
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Apply theme on mount and change
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   // Change navbar style on scroll
   useEffect(() => {
@@ -28,9 +37,12 @@ function Navbar() {
     setIsMobileMenuOpen(false);
   }, [location]);
 
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
   const handleLanguageChange = (lang) => {
     setLanguage(lang);
-    // Here you would implement actual language change logic
     console.log(`Language changed to ${lang}`);
   };
 
@@ -88,15 +100,6 @@ function Navbar() {
             </li>
             <li className="nav-item">
               <Link 
-                to="/pricing" 
-                className={`nav-link ${location.pathname === '/pricing' ? 'active' : ''}`}
-              >
-                <i className="bi bi-currency-dollar"></i>
-                <span>Pricing</span>
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link 
                 to="/contact" 
                 className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}
               >
@@ -108,6 +111,7 @@ function Navbar() {
 
           {/* Right Side Actions */}
           <div className="nav-actions">
+
             {/* Language Dropdown */}
             <div className="language-dropdown">
               <button className="language-btn">
@@ -140,11 +144,19 @@ function Navbar() {
               </Link>
             </div>
 
-            {/* User Profile (when logged in) - Example */}
-            {/* <div className="user-profile">
-              <img src="/default-avatar.png" alt="User" className="user-avatar" />
-              <span className="user-name">John Doe</span>
-            </div> */}
+            {/* Theme Toggle — rightmost */}
+            <button
+              className="theme-toggle"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            >
+              {theme === 'light' ? (
+                <i className="bi bi-moon"></i>
+              ) : (
+                <i className="bi bi-sun"></i>
+              )}
+            </button>
           </div>
         </div>
       </div>

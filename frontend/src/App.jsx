@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Signup from './components/home/Signup';
+import Login from './components/home/Login';
 import OtpVerification from './components/home/Otp';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -17,6 +18,9 @@ function App() {
           
           {/* Signup Page */}
           <Route path="/signup" element={<Signup />} />
+
+          {/* Login Page */}
+          <Route path="/login" element={<Login />} />
           
           {/* OTP Verification Page */}
           <Route path="/verify-otp" element={<OtpVerification />} />
