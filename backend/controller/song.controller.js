@@ -7,6 +7,17 @@
 import Song  from "../model/songs.model.js"
 import Owner from "../model/owner.model.js"
 const song=Song;
+
+export const getSongsByOwner = async (req, res) => {
+  try {
+    const { ownerId } = req.params;
+    const songs = await Song.find({ owner: ownerId }).sort({ uploadedAt: -1 });
+    res.status(200).json({ songs });
+  } catch (error) {
+    console.error("Error fetching owner songs:", error);
+    res.status(500).json({ message: "Server error while fetching songs", error });
+  }
+};
 export const uploadSong = async (req, res) => {
   try {
     const { title, artist,album, song, lyrics, genre, category,scope, description} = req.body;
@@ -69,7 +80,6 @@ export const deleteSong = async (req, res) => {
     await Song.deleteOne({ _id: song._id });
 
     return res.status(200).json({ message: "Song deleted successfully" });
-
   } catch (error) {
     return res.status(500).json({
       message: "Server error while deleting song",
@@ -77,6 +87,36 @@ export const deleteSong = async (req, res) => {
     });
   }
 };
+
+export const deleteAlbum = async (req, res) => {
+  try {
+    const { albumName } = req.body;
+    const { ownerId } = req.params;
+
+    if (!albumName) {
+      return res.status(400).json({ message: "Album name is required" });
+    }
+
+    // Deleting an album means deleting all songs associated with it
+    const result = await Song.deleteMany({ owner: ownerId, album: albumName });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: "No songs found for this album" });
+    }
+
+    return res.status(200).json({ 
+      message: `Album '${albumName}' and its ${result.deletedCount} tracks deleted successfully` 
+    });
+
+  } catch (error) {
+    console.error("Error in deleteAlbum:", error);
+    return res.status(500).json({
+      message: "Server error while deleting album",
+      error
+    });
+  }
+};
+
 export const editsong=(req,res)=>{
 
 }

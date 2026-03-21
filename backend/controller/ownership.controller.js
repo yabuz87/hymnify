@@ -39,6 +39,7 @@ export const signUp = async (req, res) => {
       });
     }
 
+    console.log("client is being listened")
     const existingUnverified = await Unverified.findOne({ email });
       if (existingUnverified && existingUnverified.otpExpires > Date.now()) {
       return res.status(400).json({
@@ -46,11 +47,12 @@ export const signUp = async (req, res) => {
       });
     }
     
-
+    console.log("client is being listened")
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedAccessingPassword = await bcrypt.hash(accessingPassword, 10);
 
     const otpCode = generateOTP();
+       console.log("client is being listened",otpCode)
     const hashedOtp = await bcrypt.hash(otpCode, 10);
 
     const newOwner = new Unverified({
@@ -68,7 +70,10 @@ export const signUp = async (req, res) => {
     await sendOtpEmail(email, otpCode);
 
     return res.status(201).json({
-      message: "We've sent you an OTP to your email. Check inbox or spam.",
+     churchName:churchName,
+      choirName:choirName,
+      location:location,
+      email:email,
     });
 
   } catch (error) {
@@ -107,7 +112,7 @@ export const sendOtpEmail = async (email, otpCode) => {
 export const verifyEmail = async (req, res) => {
   try {
     const { email, otp } = req.body;
-
+    console.log("here we go we get to verify Email")
     const unverifiedUser = await Unverified.findOne({ email });
     if (!unverifiedUser) {
       return res.status(404).json({ message: "User not found" });
@@ -135,7 +140,7 @@ export const verifyEmail = async (req, res) => {
     // Delete unverified record
     await Unverified.deleteOne({ _id: unverifiedUser._id });
 
-    res.status(200).json({ message: "Email verified successfully" });
+    res.status(200).json(verifiedOwner);
 
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
