@@ -6,6 +6,6 @@ export const ownerRouter=express.Router()
 ownerRouter.post("/signup",signUp);
 ownerRouter.post("/login",loginAdmin);
 ownerRouter.post("/verify",verifyEmail);
-ownerRouter.post("/logout",logoutClient);
+ownerRouter.post("/logout",logoutAdmin);
 ownerRouter.post("/client/login",loginClient);
-ownerRouter.post("/client/logout",logoutAdmin);
+ownerRouter.post("/client/logout",logoutClient);

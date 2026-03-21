@@ -58,8 +58,6 @@ const unverifiedSchema = new mongoose.Schema(
 
 );
 
-unverifiedSchema.index({ email: 1 });
-
 
 const Unverified = mongoose.model('Unverified', unverifiedSchema);
 
