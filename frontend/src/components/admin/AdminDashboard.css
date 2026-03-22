@@ -127,8 +127,8 @@
 /* ── Grid & Cards ── */
 .admin-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
 }
 
 .album-card {
@@ -142,8 +142,7 @@
 }
 
 .album-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
   border-color: var(--border-input-focus);
 }
 
@@ -159,7 +158,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
 }
 
 .album-card-overlay {
@@ -179,7 +177,7 @@
 }
 
 .album-card:hover .album-cover img {
-  transform: scale(1.05);
+  opacity: 0.9;
 }
 
 .album-cover-overlay {
@@ -217,7 +215,7 @@
 .icon-btn.delete-btn { color: #dc3545; }
 
 .album-details {
-  padding: 1.5rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   flex-grow: 1;

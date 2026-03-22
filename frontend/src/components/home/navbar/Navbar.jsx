@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '../../state-managment/auth.js';
 import './Navbar.css';
 
 function Navbar() {
+  const { authUser, logout } = useAuthStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState('English');
@@ -134,14 +136,29 @@ function Navbar() {
 
             {/* Login/Signup Buttons */}
             <div className="auth-buttons">
-              <Link to="/login" className="btn-login">
-                <i className="bi bi-box-arrow-in-right"></i>
-                <span>Log In</span>
-              </Link>
-              <Link to="/signup" className="btn-signup">
-                <span>Sign Up</span>
-                <i className="bi bi-arrow-right"></i>
-              </Link>
+              {authUser ? (
+                <>
+                  <Link to="/dashboard" className="btn-login">
+                    <i className="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                  </Link>
+                  <button onClick={logout} className="btn-signup" style={{ border: 'none', cursor: 'pointer', outline: 'none' }}>
+                    <span>Log Out</span>
+                    <i className="bi bi-box-arrow-right"></i>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="btn-login">
+                    <i className="bi bi-box-arrow-in-right"></i>
+                    <span>Log In</span>
+                  </Link>
+                  <Link to="/signup" className="btn-signup">
+                    <span>Sign Up</span>
+                    <i className="bi bi-arrow-right"></i>
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Theme Toggle — rightmost */}
