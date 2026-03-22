@@ -48,7 +48,11 @@ function Login() {
     setIsLoading(true);
 
     try {
-      await login(formData);
+      const success = await login(formData);
+      if (success) {
+        
+        navigate('/dashboard');
+      }
     } catch (error) {
       console.error('Login error:', error);
     } finally {

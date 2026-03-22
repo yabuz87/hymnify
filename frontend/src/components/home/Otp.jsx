@@ -86,8 +86,8 @@ function OtpVerification() {
       console.log(data, "verify-data", verifyData);
       const res = await verify(data);
       if (res) {
-        setSuccess('Email verified successfully! Redirecting...');
-        setTimeout(() => navigate('/dashboard'), 1500);
+        setSuccess('Email verified! Redirecting to Log In...');
+        setTimeout(() => navigate('/login'), 1500);
       }
     } catch (err) {
       setError('Invalid OTP. Please try again.');

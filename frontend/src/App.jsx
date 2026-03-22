@@ -1,20 +1,26 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Signup from './components/home/Signup';
 import Login from './components/home/Login';
 import OtpVerification from './components/home/Otp';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import Navbar from './components/home/navbar/Navbar';
+import Home from './components/home/Home';
+import About from './components/home/About';
+import Footer from './components/home/footer/Footer';
+import AdminDashboard from './components/admin/AdminDashboard';
 
 function App() {
   return (
     <Router>
       <div className="App">
+        <Toaster position="bottom-right" reverseOrder={false} />
        <Navbar/>
         <Routes>
-          {/* Default route redirects to signup */}
-          <Route path="/" element={<Navigate to="/signup" replace />} />
+          {/* Home Page (Landing) */}
+          <Route path="/" element={<Home />} />
           
           {/* Signup Page */}
           <Route path="/signup" element={<Signup />} />
@@ -27,7 +33,14 @@ function App() {
           
           {/* Optional: Add a route with email parameter */}
           <Route path="/verify-otp/:email" element={<OtpVerification />} />
+
+          {/* About Page */}
+          <Route path="/about" element={<About />} />
+
+          {/* Admin Dashboard */}
+          <Route path="/dashboard" element={<AdminDashboard />} />
         </Routes>
+        <Footer />
       </div>
     </Router>
   );
