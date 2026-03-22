@@ -11,6 +11,13 @@
   --bg-btn: #222;
   --bg-btn-hover: #444;
   --bg-btn-disabled: #aaa;
+  
+  /* Primary & Secondary Palette */
+  --primary-color: #6366f1;
+  --secondary-color: #06b6d4;
+  --primary-rgb: 99, 102, 241;
+  --secondary-rgb: 6, 182, 212;
+
 
   --border-color: #e5e5e5;
   --border-input: #ddd;
@@ -69,6 +76,13 @@
   --bg-btn: #e5e5e5;
   --bg-btn-hover: #ccc;
   --bg-btn-disabled: #555;
+  
+  /* Primary & Secondary Palette (Dark) */
+  --primary-color: #818cf8;
+  --secondary-color: #22d3ee;
+  --primary-rgb: 129, 140, 248;
+  --secondary-rgb: 34, 211, 238;
+
 
   --border-color: #333;
   --border-input: #444;
