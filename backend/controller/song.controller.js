@@ -6,6 +6,7 @@
 // functions logics are these but not only uploadsong,getallpublic,deletesong,editsong
 import Song  from "../model/songs.model.js"
 import Owner from "../model/owner.model.js"
+import bcrypt from "bcrypt";
 const song=Song;
 
 export const getSongsByOwner = async (req, res) => {
@@ -57,11 +58,73 @@ export const uploadSong = async (req, res) => {
 };
 
 export const getallpublic=async (req,res)=>{
-  const publicSongs= await song.find({scope:'public'})
-  res.status(200).json({publicSongs})
-  
+  try {
+    const publicSongs = await song
+      .find({ scope: 'public' })
+      .sort({ uploadedAt: -1 })
+      .populate('owner', 'churchName choirName location');
 
+    return res.status(200).json({ publicSongs });
+  } catch (error) {
+    console.error("Error fetching public songs:", error);
+    return res.status(500).json({
+      message: "Server error while fetching public songs",
+      error: error.message
+    });
+  }
 }
+
+export const getPrivateSongsWithAccess = async (req, res) => {
+  try {
+    const { churchName, choirName, accessingPassword, location } = req.body;
+
+    if (!churchName || !choirName || !accessingPassword || !location) {
+      return res.status(400).json({
+        message: "churchName, choirName, accessingPassword and location are required."
+      });
+    }
+
+    const owner = await Owner.findOne({
+      churchName,
+      choirName,
+      location: {
+        region: location.region,
+        city: location.city,
+        kebele: location.kebele
+      }
+    });
+
+    if (!owner) {
+      return res.status(404).json({
+        message: "No matching owner found for provided church/choir/location."
+      });
+    }
+
+    const isAccessPasswordValid = await bcrypt.compare(accessingPassword, owner.accessingPassword);
+    if (!isAccessPasswordValid) {
+      return res.status(401).json({ message: "Invalid accessing password." });
+    }
+
+    const privateSongs = await Song.find({ owner: owner._id, scope: 'private' }).sort({ uploadedAt: -1 });
+
+    return res.status(200).json({
+      message: "Private songs fetched successfully.",
+      owner: {
+        _id: owner._id,
+        churchName: owner.churchName,
+        choirName: owner.choirName,
+        location: owner.location
+      },
+      privateSongs
+    });
+  } catch (error) {
+    console.error("Error fetching private songs:", error);
+    return res.status(500).json({
+      message: "Server error while fetching private songs",
+      error: error.message
+    });
+  }
+};
 export const deleteSong = async (req, res) => {
   try {
     const { title, artist, album, category, scope } = req.body;
@@ -117,6 +180,42 @@ export const deleteAlbum = async (req, res) => {
   }
 };
 
-export const editsong=(req,res)=>{
+export const editsong = async (req, res) => {
+  try {
+    const { ownerId } = req.params;
+    const { songId, ...updateData } = req.body;
 
-}
+    if (!songId) {
+      return res.status(400).json({ message: "Song ID is required for editing." });
+    }
+
+    // Find the song and verify ownership
+    const song = await Song.findById(songId);
+
+    if (!song) {
+      return res.status(404).json({ message: "Song not found." });
+    }
+
+    if (song.owner.toString() !== ownerId) {
+      return res.status(403).json({ message: "Not authorized to edit this song." });
+    }
+
+    // Update the song with the new data
+    const updatedSong = await Song.findByIdAndUpdate(
+      songId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({ 
+      message: "Song updated successfully", 
+      updatedSong 
+    });
+  } catch (error) {
+    console.error("Error editing song:", error);
+    res.status(500).json({ 
+      message: "Server error while editing song", 
+      error: error.message 
+    });
+  }
+};
