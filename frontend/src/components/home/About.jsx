@@ -1,12 +1,24 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import './about.css';
 import FunctionalityCarousel from './carousel/FunctionalityCarousel';
-
+import { axiosInstance } from '../../libs/utils.js';
 
 function About() {
+  const [stats, setStats] = useState({ churchCount: 0, songCount: 0 });
+
   useEffect(() => {
     window.scrollTo(0, 0);
+    const fetchStats = async () => {
+      try {
+        const response = await axiosInstance.get('/api/stats');
+        setStats(response.data);
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      }
+    };
+    fetchStats();
   }, []);
+
 
   return (
     <div className="about-page">
@@ -33,13 +45,14 @@ function About() {
         <div className="container">
           <div className="stats-grid">
             <div className="stat-item fade-in">
-              <span className="stat-number">100+</span>
+              <span className="stat-number">{stats.churchCount}+</span>
               <span className="stat-label">Churches Registered</span>
             </div>
             <div className="stat-item fade-in delay-1">
-              <span className="stat-number">5k+</span>
+              <span className="stat-number">{stats.songCount}+</span>
               <span className="stat-label">Songs Preserved</span>
             </div>
+
             <div className="stat-item fade-in delay-2">
               <span className="stat-number">24/7</span>
               <span className="stat-label">Global Access</span>
@@ -52,8 +65,30 @@ function About() {
         </div>
       </section>
 
+      {/* ── Mission & Vision ── */}
+      <section id="vision" className="about-section mission-section">
+        <div className="container">
+          <div className="mission-grid">
+            <div className="mission-text fade-in">
+              <span className="badge">Project Purpose</span>
+              <h2>Digital Sanctuary for Worship</h2>
+              <p>
+                This project aims to serve the church music community and songwriters by providing a cloud-based platform for storing and accessing song lyrics. It is especially designed to support local church choirs by enabling them to securely upload and manage their lyrics, with access limited to members within their group.
+              </p>
+              <p>
+                Through this system, choir members can easily retrieve shared resources anytime, improving collaboration and organization. Ultimately, the project seeks to digitize the song rehearsal process and ensure that musical content is preserved in a reliable digital format.
+              </p>
+            </div>
+            <div className="mission-image fade-in delay-1">
+              <div className="abstract-shape"></div>
+              <i className="bi bi-cloud-check-fill icon-large"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Core Benefits (Simpler Impact) ── */}
-      <section id="vision" className="about-section impact-background">
+      <section className="about-section impact-background">
         <div className="container">
           <div className="section-header-centered fade-in">
             <span className="badge">Our Mission</span>

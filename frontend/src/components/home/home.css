@@ -52,10 +52,12 @@
 }
 
 .text-highlight {
+  display: inline-block;
   background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 .hero-subtitle {
@@ -160,6 +162,116 @@
   color: var(--text-secondary);
   font-size: 1.1rem;
   line-height: 1.6;
+}
+
+/* ── Featured Hymns Section ── */
+.featured-songs-section {
+  padding: 6rem 0;
+  background: var(--bg-subtle);
+  border-top: 1px solid var(--border-color);
+}
+
+.section-header {
+  margin-bottom: 4rem;
+}
+
+.section-header h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.section-header p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.sample-songs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.song-sample-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.song-sample-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+  border-color: rgba(var(--primary-rgb), 0.4);
+}
+
+.song-card-header {
+  margin-bottom: 1.5rem;
+}
+
+.song-category {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--primary-color);
+  background: rgba(var(--primary-rgb), 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+}
+
+.song-card-body {
+  flex-grow: 1;
+  margin-bottom: 2rem;
+}
+
+.song-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.song-artist {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.song-church {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.song-card-footer {
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.5rem;
+}
+
+.btn-view-song {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: gap 0.2s ease;
+}
+
+.btn-view-song:hover {
+  gap: 0.75rem;
+  color: var(--secondary-color);
 }
 
 /* ── CTA Banner ── */

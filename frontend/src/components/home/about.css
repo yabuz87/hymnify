@@ -15,6 +15,74 @@
   padding: 0 2rem;
 }
 
+/* ── Mission Section ── */
+.mission-section {
+  padding: 8rem 0;
+  background: var(--bg-page);
+}
+
+.mission-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: center;
+}
+
+.mission-text h2 {
+  font-size: 3rem;
+  margin: 1.5rem 0 2rem;
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-color) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.mission-text p {
+  font-size: 1.25rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.mission-image {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.abstract-shape {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(var(--primary-rgb), 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+}
+
+.icon-large {
+  font-size: 8rem;
+  color: var(--primary-color);
+  z-index: 1;
+  filter: drop-shadow(0 10px 20px rgba(var(--primary-rgb), 0.2));
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-30px); }
+}
+
+@media (max-width: 992px) {
+  .mission-grid {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 4rem;
+  }
+  .mission-image { order: -1; }
+  .abstract-shape { width: 300px; height: 300px; }
+}
+
 /* ── Hero Section ── */
 .about-hero {
   position: relative;
@@ -50,14 +118,14 @@
 .hero-badge {
   display: inline-block;
   padding: 0.5rem 1.25rem;
-  background: var(--bg-hover);
-  color: var(--text-primary);
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary-color);
   border-radius: 50px;
-  font-size: 0.85rem;
   font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   border: 1px solid var(--border-color);
 }
 

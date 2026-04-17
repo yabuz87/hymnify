@@ -11,6 +11,8 @@ import Home from './components/home/Home';
 import About from './components/home/About';
 import Footer from './components/home/footer/Footer';
 import AdminDashboard from './components/admin/AdminDashboard';
+import Features from './components/home/Features';
+import Contact from './components/home/Contact';
 
 function App() {
   return (
@@ -36,6 +38,12 @@ function App() {
 
           {/* About Page */}
           <Route path="/about" element={<About />} />
+
+          {/* Features Page */}
+          <Route path="/features" element={<Features />} />
+
+          {/* Contact Page */}
+          <Route path="/contact" element={<Contact />} />
 
           {/* Admin Dashboard */}
           <Route path="/dashboard" element={<AdminDashboard />} />
