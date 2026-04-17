@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../songs/screens/song_list_screen.dart';
 import '../../songs/screens/offline_songs_screen.dart';
+import 'client_login_screen.dart';
 import '../../../app.dart'; // To access themeNotifier
 
 class WelcomeScreen extends StatelessWidget {
@@ -143,11 +144,8 @@ class WelcomeScreen extends StatelessWidget {
                       height: 56,
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Private login functionality coming soon!'),
-                              backgroundColor: Colors.white24,
-                            ),
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const ClientLoginScreen()),
                           );
                         },
                         icon: const Icon(Icons.lock_outline),

@@ -7,8 +7,9 @@ class SongRepository {
   SongRepository()
       : _dio = Dio(
           BaseOptions(
-            // Replace this with your machine IP when running on emulator/device.
-            baseUrl: 'http://10.0.2.2:5000',
+            // 10.0.2.2 is the special IP to access your machine from an Android emulator.
+            // If using a real device, replace this with your computer's local IP (e.g. 192.168.x.x).
+            baseUrl: 'http://192.168.8.159:3000',
             connectTimeout: const Duration(seconds: 10),
             receiveTimeout: const Duration(seconds: 20),
           ),
@@ -25,7 +26,7 @@ class SongRepository {
 
     _db = await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE offline_songs (
@@ -36,9 +37,30 @@ class SongRepository {
             category TEXT,
             scope TEXT,
             chorus TEXT,
+            lyrics TEXT,
+            numbers TEXT,
             description TEXT
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('DROP TABLE IF EXISTS offline_songs');
+          await db.execute('''
+            CREATE TABLE offline_songs (
+              id TEXT PRIMARY KEY,
+              title TEXT NOT NULL,
+              artist TEXT NOT NULL,
+              album TEXT,
+              category TEXT,
+              scope TEXT,
+              chorus TEXT,
+              lyrics TEXT,
+              numbers TEXT,
+              description TEXT
+            )
+          ''');
+        }
       },
     );
     return _db!;
@@ -72,5 +94,45 @@ class SongRepository {
     final db = await _database();
     final rows = await db.query('offline_songs', orderBy: 'title ASC');
     return rows.map((row) => Song.fromDbJson(row)).toList();
+  }
+
+  Future<void> deleteOfflineSong(String id) async {
+    final db = await _database();
+    await db.delete(
+      'offline_songs',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<Song>> loginAndFetchPrivateSongs({
+    required String churchName,
+    required String choirName,
+    required String location,
+    required String accessingPassword,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/client/login',
+        data: {
+          'churchName': churchName,
+          'choirName': choirName,
+          'location': location,
+          'accessingPassword': accessingPassword,
+        },
+      );
+      
+      final list = (response.data['songs'] as List<dynamic>? ?? <dynamic>[]);
+      return list
+          .whereType<Map<String, dynamic>>()
+          .map(Song.fromApiJson)
+          .toList();
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.data != null) {
+        final message = e.response?.data['message'] ?? 'Login failed';
+        throw Exception(message);
+      }
+      throw Exception('Network error. Please try again.');
+    }
   }
 }

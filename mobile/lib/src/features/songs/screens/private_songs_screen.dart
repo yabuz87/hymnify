@@ -1,63 +1,47 @@
 import 'package:flutter/material.dart';
-import '../data/song_repository.dart';
 import '../models/song.dart';
+import '../data/song_repository.dart';
 import 'song_detail_screen.dart';
 import '../../../app.dart';
 
-class SongListScreen extends StatefulWidget {
-  const SongListScreen({super.key});
+class PrivateSongsScreen extends StatefulWidget {
+  final List<Song> initialSongs;
+  final String ownerName;
+
+  const PrivateSongsScreen({
+    super.key,
+    required this.initialSongs,
+    required this.ownerName,
+  });
 
   @override
-  State<SongListScreen> createState() => _SongListScreenState();
+  State<PrivateSongsScreen> createState() => _PrivateSongsScreenState();
 }
 
-class _SongListScreenState extends State<SongListScreen> {
-  final SongRepository _repository = SongRepository();
+class _PrivateSongsScreenState extends State<PrivateSongsScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final SongRepository _repository = SongRepository();
 
-  List<Song> _songs = <Song>[];
-  bool _isLoading = true;
+  late List<Song> _songs;
   String _query = '';
-  String? _errorMessage;
   bool _isGroupedByAlbum = false;
 
   @override
   void initState() {
     super.initState();
-    _loadSongs();
+    _songs = List.from(widget.initialSongs);
+    _checkOfflineStatus();
   }
 
-  Future<void> _loadSongs() async {
+  Future<void> _checkOfflineStatus() async {
+    // Map offline downloaded statuses to private songs seamlessly
+    final offlineIds = await _repository.getOfflineSongIds();
+    if (!mounted) return;
     setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+      _songs = _songs.map(
+        (song) => offlineIds.contains(song.id) ? song.copyWith(isDownloaded: true) : song,
+      ).toList();
     });
-
-    try {
-      final songs = await _repository.fetchPublicSongs();
-      final offlineIds = await _repository.getOfflineSongIds();
-
-      if (!mounted) return;
-      setState(() {
-        _songs = songs
-            .map(
-              (song) => offlineIds.contains(song.id)
-                  ? song.copyWith(isDownloaded: true)
-                  : song,
-            )
-            .toList();
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _errorMessage = 'Failed to load songs from API.';
-      });
-    } finally {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
   Future<void> _toggleDownloadSong(String id) async {
@@ -71,26 +55,6 @@ class _SongListScreenState extends State<SongListScreen> {
     if (target == null) return;
 
     if (target.isDownloaded) {
-      final confirm = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Remove from Offline?'),
-          content: Text('Are you sure you want to remove "${target!.title}" from your downloaded library?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Remove', style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
-      );
-
-      if (confirm != true) return;
-
       await _repository.deleteOfflineSong(target.id);
       setState(() {
         _songs = _songs
@@ -111,7 +75,7 @@ class _SongListScreenState extends State<SongListScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Song prepared for offline use.')),
+          const SnackBar(content: Text('Song secured for offline viewing.')),
         );
       }
     }
@@ -134,10 +98,10 @@ class _SongListScreenState extends State<SongListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Public Library'),
+        title: Text('${widget.ownerName} Hymns'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(), 
+          onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           IconButton(
@@ -145,11 +109,6 @@ class _SongListScreenState extends State<SongListScreen> {
             onPressed: () {
               themeNotifier.value = Theme.of(context).brightness == Brightness.dark ? ThemeMode.light : ThemeMode.dark;
             },
-          ),
-          IconButton(
-            tooltip: 'Refresh',
-            onPressed: _loadSongs,
-            icon: const Icon(Icons.refresh),
           ),
         ],
       ),
@@ -171,8 +130,8 @@ class _SongListScreenState extends State<SongListScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Find hymns, artists, albums...',
-                prefixIcon: const Icon(Icons.search, color: Color(0xFF3D5AFE)),
+                hintText: 'Search private hymns, albums...',
+                prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
                 filled: true,
                 fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
                 suffixIcon: _query.isEmpty
@@ -194,91 +153,54 @@ class _SongListScreenState extends State<SongListScreen> {
             ),
           ),
           Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text('Fetching spiritual melodies...'),
+            child: Column(
+              children: [
+                if (_songs.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: SegmentedButton<bool>(
+                      segments: const [
+                        ButtonSegment(value: false, icon: Icon(Icons.list), label: Text('By Song')),
+                        ButtonSegment(value: true, icon: Icon(Icons.album), label: Text('By Album')),
                       ],
+                      selected: {_isGroupedByAlbum},
+                      onSelectionChanged: (Set<bool> selection) {
+                        setState(() {
+                          _isGroupedByAlbum = selection.first;
+                        });
+                      },
+                      style: SegmentedButton.styleFrom(
+                        selectedBackgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                      ),
                     ),
-                  )
-                : _errorMessage != null
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
+                  ),
+                Expanded(
+                  child: filtered.isEmpty
+                      ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
+                              Icon(Icons.lock_outline, size: 64, color: Colors.grey.withOpacity(0.5)),
                               const SizedBox(height: 16),
                               Text(
-                                _errorMessage!,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 24),
-                              ElevatedButton.icon(
-                                onPressed: _loadSongs,
-                                icon: const Icon(Icons.replay),
-                                label: const Text('Try Again'),
+                                _query.isEmpty ? 'No private songs assigned.' : 'No match found for "$_query"',
+                                style: TextStyle(color: Colors.grey[600], fontSize: 16),
                               ),
                             ],
                           ),
-                        ),
-                      )
-                    : Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            child: SegmentedButton<bool>(
-                              segments: const [
-                                ButtonSegment(value: false, icon: Icon(Icons.list), label: Text('By Song')),
-                                ButtonSegment(value: true, icon: Icon(Icons.album), label: Text('By Album')),
-                              ],
-                              selected: {_isGroupedByAlbum},
-                              onSelectionChanged: (Set<bool> selection) {
-                                setState(() {
-                                  _isGroupedByAlbum = selection.first;
-                                });
+                        )
+                      : _isGroupedByAlbum
+                          ? _buildGroupedByAlbum(filtered)
+                          : ListView.builder(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                return _buildSongCard(filtered[index]);
                               },
-                              style: SegmentedButton.styleFrom(
-                                selectedBackgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                              ),
                             ),
-                          ),
-                          Expanded(
-                            child: filtered.isEmpty
-                                ? Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.music_off, size: 64, color: Colors.grey.withOpacity(0.5)),
-                                        const SizedBox(height: 16),
-                                        Text(
-                                          _query.isEmpty ? 'No songs in the library yet.' : 'No match found for "$_query"',
-                                          style: TextStyle(color: Colors.grey[600], fontSize: 16),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                : RefreshIndicator(
-                                    onRefresh: _loadSongs,
-                                    child: _isGroupedByAlbum 
-                                      ? _buildGroupedByAlbum(filtered)
-                                      : ListView.builder(
-                                          padding: const EdgeInsets.symmetric(vertical: 8),
-                                          itemCount: filtered.length,
-                                          itemBuilder: (context, index) {
-                                            return _buildSongCard(filtered[index]);
-                                          },
-                                        ),
-                                  ),
-                          ),
-                        ],
-                      ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -305,7 +227,7 @@ class _SongListScreenState extends State<SongListScreen> {
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
             initiallyExpanded: index == 0,
-            leading: const Icon(Icons.album, color: Color(0xFF3D5AFE)),
+            leading: Icon(Icons.album, color: Theme.of(context).colorScheme.primary),
             title: Text(albumName, style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text('${albumSongs.length} hymn${albumSongs.length == 1 ? '' : 's'}'),
             children: albumSongs.map((song) => _buildSongCard(song)).toList(),
@@ -328,13 +250,7 @@ class _SongListScreenState extends State<SongListScreen> {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           leading: CircleAvatar(
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            child: Text(
-              song.title.isNotEmpty ? song.title[0].toUpperCase() : '?',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: Icon(Icons.lock, size: 18, color: Theme.of(context).colorScheme.onPrimaryContainer),
           ),
           title: Text(
             song.title,
