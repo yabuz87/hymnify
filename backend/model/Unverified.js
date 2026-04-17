@@ -14,9 +14,9 @@ const unverifiedSchema = new mongoose.Schema(
       trim: true,
     },
     location: {
-      region: { type: String, trim: true },
-      city: { type: String, trim: true },
-      kebele: { type: String, trim: true },
+      type: String,
+      required: true,
+      trim: true,
     },
     email: {
       type: String,

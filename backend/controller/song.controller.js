@@ -57,12 +57,19 @@ export const uploadSong = async (req, res) => {
   }
 };
 
-export const getallpublic=async (req,res)=>{
+export const getallpublic = async (req, res) => {
   try {
-    const publicSongs = await song
-      .find({ scope: 'public' })
+    const limit = parseInt(req.query.limit) || 0;
+    
+    let query = song.find({ scope: 'public' })
       .sort({ uploadedAt: -1 })
       .populate('owner', 'churchName choirName location');
+      
+    if (limit > 0) {
+      query = query.limit(limit);
+    }
+    
+    const publicSongs = await query;
 
     return res.status(200).json({ publicSongs });
   } catch (error) {
