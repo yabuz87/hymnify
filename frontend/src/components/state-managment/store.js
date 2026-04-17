@@ -120,12 +120,13 @@ export const useSongStore = create((set, get) => ({
   editSong: async (ownerId, songData) => {
     try {
       set({ isEditing: true });
-      
-      // NOTE: backend controller 'editsong' is currently empty, but this is the frontend wiring.
+
       const response = await utilsAxios.post(`/song/edit/${ownerId}`, songData);
-      
-      // Assuming it will return the updated song in the future
-      const updatedSong = response.data.song || songData; 
+      const updatedSong = response.data.updatedSong;
+
+      if (!updatedSong?._id) {
+        throw new Error("Invalid updated song response");
+      }
       
       set((state) => ({
         songs: state.songs.map((song) => 
