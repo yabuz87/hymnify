@@ -59,9 +59,6 @@ const ownerSchema = new mongoose.Schema(
   }
 );
 
-// 🔐 Index for fast email lookup
-ownerSchema.index({ email: 1 });
-
 
 const Owner = mongoose.model('Owner', ownerSchema);
 
