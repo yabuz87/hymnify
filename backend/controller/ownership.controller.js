@@ -111,6 +111,9 @@ export const sendOtpEmail = async (email, otpCode) => {
 
 export const verifyEmail = async (req, res) => {
   try {
+    // Automatically delete expired unverified records to keep the collection consistent
+    await Unverified.deleteMany({ otpExpires: { $lt: new Date() } });
+
     const { email, otp } = req.body;
     console.log("here we go we get to verify Email")
     const unverifiedUser = await Unverified.findOne({ email });
