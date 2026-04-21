@@ -9,7 +9,7 @@ class SongRepository {
           BaseOptions(
             // 10.0.2.2 is the special IP to access your machine from an Android emulator.
             // If using a real device, replace this with your computer's local IP (e.g. 192.168.x.x).
-            baseUrl: 'http://192.168.8.159:3000',
+            baseUrl: 'http://192.168.0.137:3000',
             connectTimeout: const Duration(seconds: 10),
             receiveTimeout: const Duration(seconds: 20),
           ),
@@ -26,7 +26,7 @@ class SongRepository {
 
     _db = await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE offline_songs (
@@ -39,7 +39,8 @@ class SongRepository {
             chorus TEXT,
             lyrics TEXT,
             numbers TEXT,
-            description TEXT
+            description TEXT,
+            is_favorite INTEGER NOT NULL DEFAULT 0
           )
         ''');
       },
@@ -61,6 +62,9 @@ class SongRepository {
             )
           ''');
         }
+        if (oldVersion < 3) {
+          await db.execute('ALTER TABLE offline_songs ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0');
+        }
       },
     );
     return _db!;
@@ -79,6 +83,22 @@ class SongRepository {
     final db = await _database();
     final rows = await db.query('offline_songs', columns: <String>['id']);
     return rows.map((row) => (row['id'] ?? '').toString()).toSet();
+  }
+
+  Future<Set<String>> getFavoriteSongIds() async {
+    final db = await _database();
+    final rows = await db.query('offline_songs', columns: <String>['id'], where: 'is_favorite = ?', whereArgs: [1]);
+    return rows.map((row) => (row['id'] ?? '').toString()).toSet();
+  }
+
+  Future<void> toggleFavoriteOffline(Song song) async {
+    final db = await _database();
+    final newFavStatus = !song.isFavorite;
+    await db.insert(
+      'offline_songs',
+      song.copyWith(isFavorite: newFavStatus).toDbJson(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> saveSongOffline(Song song) async {

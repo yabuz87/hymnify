@@ -14,6 +14,7 @@ class Song {
     this.description = '',
     this.isDownloaded = false,
     this.hasUpdate = false,
+    this.isFavorite = false,
   });
 
   final String id;
@@ -28,6 +29,7 @@ class Song {
   final String description;
   final bool isDownloaded;
   final bool hasUpdate;
+  final bool isFavorite;
 
   factory Song.fromApiJson(Map<String, dynamic> json) {
     final songBlock = (json['song'] as Map<String, dynamic>?) ?? <String, dynamic>{};
@@ -42,6 +44,7 @@ class Song {
       lyrics: (json['lyrics'] ?? '').toString(),
       numbers: (songBlock['numbers'] as Map<String, dynamic>?) ?? <String, dynamic>{},
       description: (json['description'] ?? '').toString(),
+      isFavorite: false,
     );
   }
 
@@ -65,6 +68,7 @@ class Song {
       numbers: decodedNumbers,
       description: (json['description'] ?? '').toString(),
       isDownloaded: true,
+      isFavorite: (json['is_favorite'] == 1),
     );
   }
 
@@ -80,12 +84,14 @@ class Song {
       'lyrics': lyrics,
       'numbers': jsonEncode(numbers),
       'description': description,
+      'is_favorite': isFavorite ? 1 : 0,
     };
   }
 
   Song copyWith({
     bool? isDownloaded,
     bool? hasUpdate,
+    bool? isFavorite,
   }) {
     return Song(
       id: id,
@@ -100,6 +106,7 @@ class Song {
       description: description,
       isDownloaded: isDownloaded ?? this.isDownloaded,
       hasUpdate: hasUpdate ?? this.hasUpdate,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 }
