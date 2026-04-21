@@ -11,6 +11,8 @@ class SongListScreen extends StatefulWidget {
   State<SongListScreen> createState() => _SongListScreenState();
 }
 
+enum ViewMode { bySong, byAlbum, favorites }
+
 class _SongListScreenState extends State<SongListScreen> {
   final SongRepository _repository = SongRepository();
   final TextEditingController _searchController = TextEditingController();
@@ -19,7 +21,7 @@ class _SongListScreenState extends State<SongListScreen> {
   bool _isLoading = true;
   String _query = '';
   String? _errorMessage;
-  bool _isGroupedByAlbum = false;
+  ViewMode _viewMode = ViewMode.bySong;
 
   @override
   void initState() {
@@ -36,14 +38,16 @@ class _SongListScreenState extends State<SongListScreen> {
     try {
       final songs = await _repository.fetchPublicSongs();
       final offlineIds = await _repository.getOfflineSongIds();
+      final favoriteIds = await _repository.getFavoriteSongIds();
 
       if (!mounted) return;
       setState(() {
         _songs = songs
             .map(
-              (song) => offlineIds.contains(song.id)
-                  ? song.copyWith(isDownloaded: true)
-                  : song,
+              (song) => song.copyWith(
+                isDownloaded: offlineIds.contains(song.id),
+                isFavorite: favoriteIds.contains(song.id),
+              ),
             )
             .toList();
       });
@@ -57,6 +61,29 @@ class _SongListScreenState extends State<SongListScreen> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _toggleFavoriteSong(String id) async {
+    Song? target;
+    for (final song in _songs) {
+      if (song.id == id) {
+        target = song;
+        break;
+      }
+    }
+    if (target == null) return;
+
+    await _repository.toggleFavoriteOffline(target);
+    setState(() {
+      _songs = _songs
+          .map((song) => song.id == id ? song.copyWith(isFavorite: !target!.isFavorite) : song)
+          .toList();
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(target.isFavorite ? 'Removed from favorites' : 'Added to favorites')),
+      );
     }
   }
 
@@ -126,6 +153,7 @@ class _SongListScreenState extends State<SongListScreen> {
   @override
   Widget build(BuildContext context) {
     final filtered = _songs.where((song) {
+      if (_viewMode == ViewMode.favorites && !song.isFavorite) return false;
       final q = _query.toLowerCase();
       return song.title.toLowerCase().contains(q) ||
           song.artist.toLowerCase().contains(q) ||
@@ -233,15 +261,16 @@ class _SongListScreenState extends State<SongListScreen> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            child: SegmentedButton<bool>(
+                            child: SegmentedButton<ViewMode>(
                               segments: const [
-                                ButtonSegment(value: false, icon: Icon(Icons.list), label: Text('By Song')),
-                                ButtonSegment(value: true, icon: Icon(Icons.album), label: Text('By Album')),
+                                ButtonSegment(value: ViewMode.bySong, icon: Icon(Icons.list), label: Text('Songs')),
+                                ButtonSegment(value: ViewMode.favorites, icon: Icon(Icons.favorite), label: Text('Favs')),
+                                ButtonSegment(value: ViewMode.byAlbum, icon: Icon(Icons.album), label: Text('Albums')),
                               ],
-                              selected: {_isGroupedByAlbum},
-                              onSelectionChanged: (Set<bool> selection) {
+                              selected: {_viewMode},
+                              onSelectionChanged: (Set<ViewMode> selection) {
                                 setState(() {
-                                  _isGroupedByAlbum = selection.first;
+                                  _viewMode = selection.first;
                                 });
                               },
                               style: SegmentedButton.styleFrom(
@@ -266,7 +295,7 @@ class _SongListScreenState extends State<SongListScreen> {
                                   )
                                 : RefreshIndicator(
                                     onRefresh: _loadSongs,
-                                    child: _isGroupedByAlbum 
+                                    child: _viewMode == ViewMode.byAlbum 
                                       ? _buildGroupedByAlbum(filtered)
                                       : ListView.builder(
                                           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -317,15 +346,15 @@ class _SongListScreenState extends State<SongListScreen> {
 
   Widget _buildSongCard(Song song) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           side: BorderSide(color: Colors.grey.withOpacity(0.1)),
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
           leading: CircleAvatar(
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             child: Text(
@@ -338,15 +367,34 @@ class _SongListScreenState extends State<SongListScreen> {
           ),
           title: Text(
             song.title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
-          subtitle: Text('${song.artist} • ${song.album.isEmpty ? 'Single' : song.album}'),
-          trailing: IconButton(
-            onPressed: () async => _toggleDownloadSong(song.id),
-            icon: Icon(
-              song.isDownloaded ? Icons.download_done : Icons.download,
-              color: song.isDownloaded ? Colors.green : Colors.grey,
-            ),
+          subtitle: Text(
+            '${song.artist} • ${song.album.isEmpty ? 'Single' : song.album}',
+            style: const TextStyle(fontSize: 12),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                onPressed: () async => _toggleFavoriteSong(song.id),
+                icon: Icon(
+                  song.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: song.isFavorite ? Colors.pinkAccent : Colors.grey,
+                  size: 20,
+                ),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                onPressed: () async => _toggleDownloadSong(song.id),
+                icon: Icon(
+                  song.isDownloaded ? Icons.download_done : Icons.download,
+                  color: song.isDownloaded ? Colors.green : Colors.grey,
+                  size: 20,
+                ),
+              ),
+            ],
           ),
           onTap: () async {
             await Navigator.of(context).push(
@@ -354,6 +402,7 @@ class _SongListScreenState extends State<SongListScreen> {
                 builder: (_) => SongDetailScreen(
                   song: song,
                   onDownload: () async => _toggleDownloadSong(song.id),
+                  onFavoriteToggle: () async => _toggleFavoriteSong(song.id),
                 ),
               ),
             );

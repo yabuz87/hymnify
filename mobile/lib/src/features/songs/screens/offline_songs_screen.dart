@@ -84,6 +84,29 @@ class _OfflineSongsScreenState extends State<OfflineSongsScreen> {
     }
   }
 
+  Future<void> _toggleFavoriteSong(String id) async {
+    Song? target;
+    for (final song in _songs) {
+      if (song.id == id) {
+        target = song;
+        break;
+      }
+    }
+    if (target == null) return;
+
+    await _repository.toggleFavoriteOffline(target);
+    setState(() {
+      _songs = _songs
+          .map((song) => song.id == id ? song.copyWith(isFavorite: !target!.isFavorite) : song)
+          .toList();
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(target.isFavorite ? 'Removed from favorites' : 'Added to favorites')),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -256,28 +279,46 @@ class _OfflineSongsScreenState extends State<OfflineSongsScreen> {
 
   Widget _buildSongCard(Song song) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           side: BorderSide(color: Colors.grey.withOpacity(0.1)),
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
           leading: CircleAvatar(
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             child: const Icon(Icons.library_music, size: 20),
           ),
           title: Text(
             song.title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
-          subtitle: Text('${song.artist} • ${song.album.isEmpty ? 'Single' : song.album}'),
-          trailing: IconButton(
-            onPressed: () => _removeOfflineSong(song),
-            icon: const Icon(Icons.delete_outline, color: Colors.red),
-            tooltip: 'Remove from offline bucket',
+          subtitle: Text(
+            '${song.artist} • ${song.album.isEmpty ? 'Single' : song.album}',
+            style: const TextStyle(fontSize: 12),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                onPressed: () async => _toggleFavoriteSong(song.id),
+                icon: Icon(
+                  song.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: song.isFavorite ? Colors.red : Colors.grey,
+                  size: 20,
+                ),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                onPressed: () => _removeOfflineSong(song),
+                icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                tooltip: 'Remove from offline bucket',
+              ),
+            ],
           ),
           onTap: () {
             Navigator.of(context).push(
@@ -288,6 +329,7 @@ class _OfflineSongsScreenState extends State<OfflineSongsScreen> {
                     await _removeOfflineSong(song);
                     if (mounted) Navigator.of(context).pop();
                   },
+                  onFavoriteToggle: () async => _toggleFavoriteSong(song.id),
                 ),
               ),
             );

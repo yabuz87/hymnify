@@ -36,10 +36,14 @@ class _PrivateSongsScreenState extends State<PrivateSongsScreen> {
   Future<void> _checkOfflineStatus() async {
     // Map offline downloaded statuses to private songs seamlessly
     final offlineIds = await _repository.getOfflineSongIds();
+    final favoriteIds = await _repository.getFavoriteSongIds();
     if (!mounted) return;
     setState(() {
       _songs = _songs.map(
-        (song) => offlineIds.contains(song.id) ? song.copyWith(isDownloaded: true) : song,
+        (song) => song.copyWith(
+          isDownloaded: offlineIds.contains(song.id),
+          isFavorite: favoriteIds.contains(song.id),
+        ),
       ).toList();
     });
   }
@@ -78,6 +82,29 @@ class _PrivateSongsScreenState extends State<PrivateSongsScreen> {
           const SnackBar(content: Text('Song secured for offline viewing.')),
         );
       }
+    }
+  }
+
+  Future<void> _toggleFavoriteSong(String id) async {
+    Song? target;
+    for (final song in _songs) {
+      if (song.id == id) {
+        target = song;
+        break;
+      }
+    }
+    if (target == null) return;
+
+    await _repository.toggleFavoriteOffline(target);
+    setState(() {
+      _songs = _songs
+          .map((song) => song.id == id ? song.copyWith(isFavorite: !target!.isFavorite) : song)
+          .toList();
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(target.isFavorite ? 'Removed from favorites' : 'Added to favorites')),
+      );
     }
   }
 
@@ -239,30 +266,49 @@ class _PrivateSongsScreenState extends State<PrivateSongsScreen> {
 
   Widget _buildSongCard(Song song) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           side: BorderSide(color: Colors.grey.withOpacity(0.1)),
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
           leading: CircleAvatar(
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             child: Icon(Icons.lock, size: 18, color: Theme.of(context).colorScheme.onPrimaryContainer),
           ),
           title: Text(
             song.title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
-          subtitle: Text('${song.artist} • ${song.album.isEmpty ? 'Single' : song.album}'),
-          trailing: IconButton(
-            onPressed: () async => _toggleDownloadSong(song.id),
-            icon: Icon(
-              song.isDownloaded ? Icons.download_done : Icons.download,
-              color: song.isDownloaded ? Colors.green : Colors.grey,
-            ),
+          subtitle: Text(
+            '${song.artist} • ${song.album.isEmpty ? 'Single' : song.album}',
+            style: const TextStyle(fontSize: 12),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                onPressed: () async => _toggleFavoriteSong(song.id),
+                icon: Icon(
+                  song.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: song.isFavorite ? Colors.red : Colors.grey,
+                  size: 20,
+                ),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                onPressed: () async => _toggleDownloadSong(song.id),
+                icon: Icon(
+                  song.isDownloaded ? Icons.download_done : Icons.download,
+                  color: song.isDownloaded ? Colors.green : Colors.grey,
+                  size: 20,
+                ),
+              ),
+            ],
           ),
           onTap: () async {
             await Navigator.of(context).push(
@@ -270,6 +316,7 @@ class _PrivateSongsScreenState extends State<PrivateSongsScreen> {
                 builder: (_) => SongDetailScreen(
                   song: song,
                   onDownload: () async => _toggleDownloadSong(song.id),
+                  onFavoriteToggle: () async => _toggleFavoriteSong(song.id),
                 ),
               ),
             );
