@@ -46,7 +46,7 @@ const Home = () => {
             </p>
             <div className="hero-cta-group">
               <Link to="/signup" className="btn-primary-glow">Get Started Free</Link>
-              <Link to="/about" className="btn-outline-white">Learn More</Link>
+              <Link to="/about" className="btn-outline-white">Learn more about Hymnify</Link>
             </div>
           </div>
         </div>
