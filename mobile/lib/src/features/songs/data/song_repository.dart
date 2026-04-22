@@ -7,9 +7,7 @@ class SongRepository {
   SongRepository()
       : _dio = Dio(
           BaseOptions(
-            // 10.0.2.2 is the special IP to access your machine from an Android emulator.
-            // If using a real device, replace this with your computer's local IP (e.g. 192.168.x.x).
-            baseUrl: 'http://192.168.0.137:3000',
+            baseUrl: 'https://hymnify.onrender.com',
             connectTimeout: const Duration(seconds: 10),
             receiveTimeout: const Duration(seconds: 20),
           ),

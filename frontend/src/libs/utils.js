@@ -2,6 +2,6 @@ import React from 'react'
 import axios from "axios";
 
 export const axiosInstance=axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+    baseURL: 'https://hymnify.onrender.com',
     withCredentials:true,
 });
