@@ -14,12 +14,16 @@ class SongDetailScreen extends StatelessWidget {
   final Future<void> Function() onDownload;
   final Future<void> Function() onFavoriteToggle;
 
+  String _formatMetadata(String text) {
+    return text.replaceAll(RegExp(r',\s*'), '\n').trim();
+  }
+
   void _shareLyrics(BuildContext context) {
     final buffer = StringBuffer();
     
-    final formattedTitle = song.title.replaceAll(RegExp(r',\s*'), '\n').trim();
-    final formattedArtist = song.artist.replaceAll(RegExp(r',\s*'), '\n').trim();
-    final formattedAlbum = song.album.replaceAll(RegExp(r',\s*'), '\n').trim();
+    final formattedTitle = _formatMetadata(song.title);
+    final formattedArtist = _formatMetadata(song.artist);
+    final formattedAlbum = _formatMetadata(song.album);
 
     buffer.writeln('$formattedTitle - $formattedArtist');
     if (formattedAlbum.isNotEmpty) buffer.writeln('Album: $formattedAlbum');
@@ -31,24 +35,24 @@ class SongDetailScreen extends StatelessWidget {
     if (sortedNumbers.isNotEmpty) {
       if (song.chorus.isNotEmpty) {
         buffer.writeln('[Chorus]');
-        buffer.writeln(song.chorus.replaceAll(RegExp(r',\s*'), '\n').trim());
+        buffer.writeln(_formatMetadata(song.chorus));
         buffer.writeln();
       }
       for (final entry in sortedNumbers) {
         buffer.writeln('Verse ${entry.key}.');
-        buffer.writeln(entry.value.toString().replaceAll(RegExp(r',\s*'), '\n').trim());
+        buffer.writeln(_formatMetadata(entry.value.toString()));
         buffer.writeln();
       }
     } else if (song.lyrics.isNotEmpty) {
       if (song.chorus.isNotEmpty) {
         buffer.writeln('[Chorus]');
-        buffer.writeln(song.chorus.replaceAll(RegExp(r',\s*'), '\n').trim());
+        buffer.writeln(_formatMetadata(song.chorus));
         buffer.writeln();
       }
-      buffer.writeln(song.lyrics.replaceAll(RegExp(r',\s*'), '\n').trim());
+      buffer.writeln(_formatMetadata(song.lyrics));
     } else if (song.chorus.isNotEmpty) {
       buffer.writeln('[Chorus]');
-      buffer.writeln(song.chorus.replaceAll(RegExp(r',\s*'), '\n').trim());
+      buffer.writeln(_formatMetadata(song.chorus));
     }
 
     buffer.writeln();
@@ -64,16 +68,7 @@ class SongDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Verse $number',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
-                ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            text.replaceAll(RegExp(r',\s*'), '\n').trim(),
+            _formatMetadata(text),
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   height: 1.8,
                   fontSize: 16,
@@ -102,16 +97,7 @@ class SongDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Chorus',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
-                  ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              song.chorus.replaceAll(RegExp(r',\s*'), '\n').trim(),
+              _formatMetadata(song.chorus),
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     fontStyle: FontStyle.italic,
                     height: 1.8,
@@ -128,6 +114,8 @@ class SongDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final sortedNumbers = song.numbers.entries.toList()
       ..sort((a, b) => (int.tryParse(a.key) ?? 0).compareTo(int.tryParse(b.key) ?? 0));
+
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       appBar: AppBar(
@@ -153,54 +141,81 @@ class SongDetailScreen extends StatelessWidget {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Section
-            Text(
-              song.title.replaceAll(RegExp(r',\s*'), '\n').trim(),
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+        child: InteractiveViewer(
+          minScale: 1.0,
+          maxScale: 4.0,
+          panEnabled: true,
+          scaleEnabled: true,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Section
+                Text(
+                  _formatMetadata(song.title),
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _formatMetadata(song.artist),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+                if (song.album.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Album: ${_formatMetadata(song.album)}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                   ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              song.artist.replaceAll(RegExp(r',\s*'), '\n').trim(),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ],
+                if (song.category.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Category: ${_formatMetadata(song.category)}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
-            ),
-            if (song.album.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                'Album: ${song.album.replaceAll(RegExp(r',\s*'), '\n').trim()}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-              ),
-            ],
-            const Divider(height: 32),
-
-            // Content Section
-            if (sortedNumbers.isNotEmpty) ...[
-              _buildChorus(context),
-              for (int i = 0; i < sortedNumbers.length; i++) ...[
-                _buildVerse(context, sortedNumbers[i].key, sortedNumbers[i].value.toString()),
+                ],
+                if (song.uploadedAt.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Uploaded On: ${song.uploadedAt.split('T')[0]}',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic,
+                        ),
+                  ),
+                ],
+                const Divider(height: 32),
+    
+                // Content Section
+                if (sortedNumbers.isNotEmpty) ...[
+                  _buildChorus(context),
+                  for (int i = 0; i < sortedNumbers.length; i++) ...[
+                    _buildVerse(context, sortedNumbers[i].key, sortedNumbers[i].value.toString()),
+                  ],
+                ] else if (song.lyrics.isNotEmpty) ...[
+                  _buildChorus(context),
+                  Text(
+                    _formatMetadata(song.lyrics),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.6),
+                  ),
+                ] else ...[
+                  _buildChorus(context),
+                ],
+    
+                const SizedBox(height: 48),
               ],
-            ] else if (song.lyrics.isNotEmpty) ...[
-              _buildChorus(context),
-              Text(
-                song.lyrics.replaceAll(RegExp(r',\s*'), '\n').trim(),
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.6),
-              ),
-            ] else ...[
-              // Fallback if neither numbers nor lyrics exist but there's a chorus
-              _buildChorus(context),
-            ],
-
-            const SizedBox(height: 48),
-          ],
+            ),
+          ),
         ),
       ),
     );

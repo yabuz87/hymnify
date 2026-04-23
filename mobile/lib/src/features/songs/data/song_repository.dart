@@ -24,7 +24,7 @@ class SongRepository {
 
     _db = await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE offline_songs (
@@ -37,6 +37,7 @@ class SongRepository {
             chorus TEXT,
             lyrics TEXT,
             numbers TEXT,
+            uploaded_at TEXT,
             description TEXT,
             is_favorite INTEGER NOT NULL DEFAULT 0
           )
@@ -62,6 +63,9 @@ class SongRepository {
         }
         if (oldVersion < 3) {
           await db.execute('ALTER TABLE offline_songs ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0');
+        }
+        if (oldVersion < 4) {
+          await db.execute('ALTER TABLE offline_songs ADD COLUMN uploaded_at TEXT');
         }
       },
     );

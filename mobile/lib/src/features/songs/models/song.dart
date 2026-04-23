@@ -11,6 +11,7 @@ class Song {
     required this.chorus,
     required this.lyrics,
     required this.numbers,
+    this.uploadedAt = '',
     this.description = '',
     this.isDownloaded = false,
     this.hasUpdate = false,
@@ -26,6 +27,7 @@ class Song {
   final String chorus;
   final String lyrics;
   final Map<String, dynamic> numbers;
+  final String uploadedAt;
   final String description;
   final bool isDownloaded;
   final bool hasUpdate;
@@ -43,6 +45,7 @@ class Song {
       chorus: (songBlock['chorus'] ?? '').toString(),
       lyrics: (json['lyrics'] ?? '').toString(),
       numbers: (songBlock['numbers'] as Map<String, dynamic>?) ?? <String, dynamic>{},
+      uploadedAt: (json['uploadedAt'] ?? '').toString(),
       description: (json['description'] ?? '').toString(),
       isFavorite: false,
     );
@@ -66,6 +69,7 @@ class Song {
       chorus: (json['chorus'] ?? '').toString(),
       lyrics: (json['lyrics'] ?? '').toString(),
       numbers: decodedNumbers,
+      uploadedAt: (json['uploaded_at'] ?? '').toString(),
       description: (json['description'] ?? '').toString(),
       isDownloaded: true,
       isFavorite: (json['is_favorite'] == 1),
@@ -83,6 +87,7 @@ class Song {
       'chorus': chorus,
       'lyrics': lyrics,
       'numbers': jsonEncode(numbers),
+      'uploaded_at': uploadedAt,
       'description': description,
       'is_favorite': isFavorite ? 1 : 0,
     };
@@ -92,6 +97,7 @@ class Song {
     bool? isDownloaded,
     bool? hasUpdate,
     bool? isFavorite,
+    String? uploadedAt,
   }) {
     return Song(
       id: id,
@@ -103,6 +109,7 @@ class Song {
       chorus: chorus,
       lyrics: lyrics,
       numbers: numbers,
+      uploadedAt: uploadedAt ?? this.uploadedAt,
       description: description,
       isDownloaded: isDownloaded ?? this.isDownloaded,
       hasUpdate: hasUpdate ?? this.hasUpdate,

@@ -18,13 +18,15 @@ class PrivateSongsScreen extends StatefulWidget {
   State<PrivateSongsScreen> createState() => _PrivateSongsScreenState();
 }
 
+enum ViewMode { bySong, byAlbum, favorites }
+
 class _PrivateSongsScreenState extends State<PrivateSongsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final SongRepository _repository = SongRepository();
 
   late List<Song> _songs;
   String _query = '';
-  bool _isGroupedByAlbum = false;
+  ViewMode _viewMode = ViewMode.bySong;
 
   @override
   void initState() {
@@ -103,7 +105,7 @@ class _PrivateSongsScreenState extends State<PrivateSongsScreen> {
     });
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(target.isFavorite ? 'Removed from favorites' : 'Added to favorites')),
+        SnackBar(content: Text(!target.isFavorite ? 'Added to favorites' : 'Removed from favorites')),
       );
     }
   }
@@ -117,6 +119,7 @@ class _PrivateSongsScreenState extends State<PrivateSongsScreen> {
   @override
   Widget build(BuildContext context) {
     final filtered = _songs.where((song) {
+      if (_viewMode == ViewMode.favorites && !song.isFavorite) return false;
       final q = _query.toLowerCase();
       return song.title.toLowerCase().contains(q) ||
           song.artist.toLowerCase().contains(q) ||
@@ -185,15 +188,16 @@ class _PrivateSongsScreenState extends State<PrivateSongsScreen> {
                 if (_songs.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: SegmentedButton<bool>(
+                    child: SegmentedButton<ViewMode>(
                       segments: const [
-                        ButtonSegment(value: false, icon: Icon(Icons.list), label: Text('By Song')),
-                        ButtonSegment(value: true, icon: Icon(Icons.album), label: Text('By Album')),
+                        ButtonSegment(value: ViewMode.bySong, icon: Icon(Icons.list), label: Text('By Song')),
+                        ButtonSegment(value: ViewMode.favorites, icon: Icon(Icons.favorite), label: Text('Favs')),
+                        ButtonSegment(value: ViewMode.byAlbum, icon: Icon(Icons.album), label: Text('By Album')),
                       ],
-                      selected: {_isGroupedByAlbum},
-                      onSelectionChanged: (Set<bool> selection) {
+                      selected: {_viewMode},
+                      onSelectionChanged: (Set<ViewMode> selection) {
                         setState(() {
-                          _isGroupedByAlbum = selection.first;
+                          _viewMode = selection.first;
                         });
                       },
                       style: SegmentedButton.styleFrom(
@@ -207,16 +211,17 @@ class _PrivateSongsScreenState extends State<PrivateSongsScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.lock_outline, size: 64, color: Colors.grey.withOpacity(0.5)),
+                              Icon(_viewMode == ViewMode.favorites ? Icons.favorite_border : Icons.lock_outline, size: 64, color: Colors.grey.withOpacity(0.5)),
                               const SizedBox(height: 16),
                               Text(
-                                _query.isEmpty ? 'No private songs assigned.' : 'No match found for "$_query"',
+                                _viewMode == ViewMode.favorites ? 'No favorite private hymns found.' : (_query.isEmpty ? 'No private songs assigned.' : 'No match found for "$_query"'),
                                 style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                                textAlign: TextAlign.center,
                               ),
                             ],
                           ),
                         )
-                      : _isGroupedByAlbum
+                      : _viewMode == ViewMode.byAlbum
                           ? _buildGroupedByAlbum(filtered)
                           : ListView.builder(
                               padding: const EdgeInsets.symmetric(vertical: 8),
