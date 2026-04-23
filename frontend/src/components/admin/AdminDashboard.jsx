@@ -7,8 +7,15 @@ import './AdminDashboard.css';
 
 function AdminDashboard() {
   const navigate = useNavigate();
-  const { authUser } = useAuthStore();
+  const { authUser, isCheckingAuth } = useAuthStore();
   const { songs, fetchOwnerSongs, isLoadingSongs, uploadSong, deleteSong, editSong } = useSongStore();
+
+  // Redirect to home if not authenticated
+  useEffect(() => {
+    if (!isCheckingAuth && !authUser) {
+      navigate('/');
+    }
+  }, [isCheckingAuth, authUser, navigate]);
 
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -703,7 +710,7 @@ function AdminDashboard() {
               <div style={{ background: 'var(--bg-card)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                 <h4 style={{ margin: '0 0 1rem 0', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Metadata</h4>
                 <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                  {selectedSong.description || 'No description available.'}
+                  {renderLyrics(selectedSong.description) || 'No description available.'}
                 </p>
               </div>
 
