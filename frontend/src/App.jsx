@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { useAuthStore } from './components/state-managment/auth';
 import Signup from './components/home/Signup';
 import Login from './components/home/Login';
 import OtpVerification from './components/home/Otp';
@@ -15,6 +16,22 @@ import Features from './components/home/Features';
 import Contact from './components/home/Contact';
 
 function App() {
+  const { checkAuth, isCheckingAuth, authUser } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  if (isCheckingAuth && !authUser) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh', background: 'var(--bg-page)' }}>
+        <div className="spinner-border text-primary" role="status" style={{ width: '3rem', height: '3rem' }}>
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <div className="App">

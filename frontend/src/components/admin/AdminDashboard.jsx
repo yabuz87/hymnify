@@ -250,6 +250,11 @@ function AdminDashboard() {
     );
   }
 
+  // Guard clause: if no authUser and not checking auth, don't render anything
+  if (!authUser && !isCheckingAuth) {
+    return null;
+  }
+
   return (
     <div className="admin-dashboard">
       <div className="admin-header">
