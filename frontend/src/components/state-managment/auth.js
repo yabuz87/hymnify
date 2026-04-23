@@ -56,6 +56,11 @@ export const useAuthStore = create(
           set({ authUser: response.data });
         } catch (error) {
           console.error("Error in checkAuth method:", error?.response || error);
+          // If it's a 401 (Unauthorized), just set authUser to null without showing an error toast
+          if (error.response?.status === 401) {
+            set({ authUser: null });
+            return;
+          }
           const errorMessage =
             error.response?.data?.message || "Failed to verify authentication.";
           toast.error(errorMessage);
