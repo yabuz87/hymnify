@@ -41,15 +41,10 @@ export const signUp = async (req, res) => {
 
     console.log("client is being listened")
     const existingUnverified = await Unverified.findOne({ email });
-    if (existingUnverified) {
-      if (existingUnverified.otpExpires > Date.now()) {
-        return res.status(400).json({
-          message: "OTP already sent. Please verify your email.",
-        });
-      } else {
-        // OTP expired or previous attempt failed, delete old record
-        await Unverified.deleteOne({ email });
-      }
+      if (existingUnverified && existingUnverified.otpExpires > Date.now()) {
+      return res.status(400).json({
+        message: "OTP already sent. Please verify your email.",
+      });
     }
     
     console.log("client is being listened")
@@ -72,18 +67,7 @@ export const signUp = async (req, res) => {
     });
 
     await newOwner.save();
-
-    try {
-      await sendOtpEmail(email, otpCode);
-    } catch (emailError) {
-      console.error("Error sending OTP email:", emailError);
-      // Delete the record so they can try again without waiting 10 mins
-      await Unverified.deleteOne({ email });
-      return res.status(500).json({
-        message: "Failed to send verification email. Please try again.",
-        error: emailError.message,
-      });
-    }
+    await sendOtpEmail(email, otpCode);
 
     return res.status(201).json({
      churchName:churchName,
